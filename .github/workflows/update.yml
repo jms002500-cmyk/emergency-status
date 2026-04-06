@@ -1,0 +1,33 @@
+name: Update Emergency Data
+
+on:
+  schedule:
+    # 매시간 0분에 실행되도록 설정 (1시간 간격)
+    - cron: '0 * * * *'
+  workflow_dispatch: # 수동으로 강제 실행할 수 있는 버튼 생성
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - name: 내 저장소 파일들 가져오기
+        uses: actions/checkout@v3
+
+      - name: 파이썬 환경 세팅
+        uses: actions/setup-python@v4
+        with:
+          python-version: '3.11'
+
+      - name: 필요한 파이썬 라이브러리 설치
+        run: pip install -r requirements.txt
+
+      - name: 동네실실이 파이썬 스크립트 실행 (데이터 수집)
+        run: python egroom_01.py
+
+      - name: 새로 생성된 JSON 데이터를 깃허브에 다시 저장
+        run: |
+          git config --global user.name "github-actions[bot]"
+          git config --global user.email "github-actions[bot]@users.noreply.github.com"
+          git add emergency_data.json
+          git commit -m "Update emergency data" || echo "No changes to commit"
+          git push
